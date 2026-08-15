@@ -535,3 +535,30 @@ body.is-drawer-jump .page-veil{transition:none!important;opacity:0!important;vis
 .footer-flower{
   clip-path: inset(0 round 50%);
 }
+
+
+/* v9.7 — exact catalog-button sizing, trust label alignment, surname-first specialists */
+/* Both action buttons inherit the exact rendered dimensions of “Открыть весь каталог”. */
+.trust-action,
+.contact-panel>.primary-action.primary-action--light{
+  width:var(--catalog-action-width,220px)!important;
+  min-width:var(--catalog-action-width,220px)!important;
+  height:var(--catalog-action-height,55px)!important;
+  min-height:var(--catalog-action-height,55px)!important;
+  padding-left:24px!important;
+  padding-right:24px!important;
+}
+
+/* Shift the “Лицензированная клиника” label slightly to the right. */
+.trust-heading .micro-label{padding-left:18px}
+
+@media(max-width:700px){
+  .trust-action,
+  .contact-panel>.primary-action.primary-action--light{
+    width:min(100%,var(--catalog-action-width,220px))!important;
+    min-width:0!important;
+    height:var(--catalog-action-height,55px)!important;
+    min-height:var(--catalog-action-height,55px)!important;
+  }
+  .trust-heading .micro-label{padding-left:10px}
+}

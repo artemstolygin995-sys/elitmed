@@ -148,6 +148,19 @@
   function closeDetail() { detail?.classList.remove("is-open"); detail?.setAttribute("aria-hidden", "true"); syncVeil(); }
   $("[data-detail-close]")?.addEventListener("click", closeDetail);
 
+  const catalogActionReference = $(".shelf-heading .primary-action");
+  const syncCatalogActionSize = () => {
+    if (!catalogActionReference) return;
+    const rect = catalogActionReference.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    document.documentElement.style.setProperty("--catalog-action-width", `${Math.ceil(rect.width)}px`);
+    document.documentElement.style.setProperty("--catalog-action-height", `${Math.ceil(rect.height)}px`);
+  };
+  syncCatalogActionSize();
+  requestAnimationFrame(syncCatalogActionSize);
+  document.fonts?.ready?.then(syncCatalogActionSize);
+  addEventListener("resize", syncCatalogActionSize, { passive:true });
+
   const servicesList = $("#drawer-services-list");
   function renderServices() { const q = ($("#service-search")?.value || "").trim().toLowerCase(); const list = data.services.filter(x => `${x.title} ${x.description}`.toLowerCase().includes(q)); servicesList.innerHTML = list.map(x => `<article class="service-row"><button type="button" data-service="${esc(x.id)}"><img src="${esc(x.image)}" alt="" width="96" height="96" loading="lazy" decoding="async"><span><b>${esc(x.title)}</b><strong>${esc(priceFor(x.title))}</strong></span></button></article>`).join("") || '<p class="legal-note">Ничего не найдено.</p>'; }
   renderServices();
@@ -162,7 +175,7 @@
   const doctorRoles = ["Основатель клиники · ведущий врач-косметолог","Косметолог-эстет","Врач-косметолог","Врач-дерматовенеролог · косметолог","Врач УЗИ · гинеколог","Врач ультразвуковой диагностики"];
   const featuredDoctorIndexes = data.doctors.map((_, index) => index).filter(index => index < 4);
   let featuredDoctorPosition = 0;
-  const nameView = title => { const p = title.split(" "); return p.length > 2 ? `${p.slice(1).join(" ")}<br>${p[0]}` : title; };
+  const nameView = title => { const p = title.split(" "); return p.length > 2 ? `${p[0]}<br>${p.slice(1).join(" ")}` : title; };
   function showDoctor(index, position = featuredDoctorIndexes.indexOf(index)) { const section = $(".doctor-feature"), d = data.doctors[index]; if (!section || !d) return; section.classList.add("is-switching"); const preload = new Image(); preload.decoding = "async"; preload.src = d.image; const update = () => setTimeout(() => { const img = $("#doctor-feature-image"); img.src = d.image; img.alt = d.title; $("#doctor-feature-role").textContent = doctorRoles[index] || "Специалист ElitMed"; $("#doctor-feature-quote").textContent = doctorQuotes[index] || doctorQuotes[0]; $("#doctor-feature-title").innerHTML = nameView(esc(d.title)); $("#doctor-feature-description").textContent = capitalizeFirst(d.description); const visiblePosition = position >= 0 ? position : 0; $("#doctor-count").textContent = `${two(visiblePosition + 1)} / ${two(featuredDoctorIndexes.length)}`; section.classList.remove("is-switching"); }, reduceMotion ? 0 : 300); if (preload.complete) update(); else { preload.onload = update; preload.onerror = update; } }
   if (featuredDoctorIndexes.length > 1 && !reduceMotion) setInterval(() => { if (document.body.classList.contains("is-scrolling")) return; featuredDoctorPosition = (featuredDoctorPosition + 1) % featuredDoctorIndexes.length; showDoctor(featuredDoctorIndexes[featuredDoctorPosition], featuredDoctorPosition); }, 6000);
 
