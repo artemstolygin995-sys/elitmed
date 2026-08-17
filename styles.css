@@ -562,3 +562,34 @@ body.is-drawer-jump .page-veil{transition:none!important;opacity:0!important;vis
   }
   .trust-heading .micro-label{padding-left:10px}
 }
+
+
+/* v9.8 — mobile intro alignment + doctors section reveal */
+@media(max-width:700px){
+  /* Keep the loading-screen slogan centered and fully inside the viewport. */
+  .page-intro{
+    padding-left:24px;
+    padding-right:24px;
+    overflow:hidden;
+  }
+  .page-intro p{
+    width:100%;
+    max-width:330px;
+    margin:0 auto;
+    padding:0;
+    text-align:center;
+    font-size:clamp(16px,5vw,19px);
+    line-height:1.35;
+    letter-spacing:.025em;
+    overflow-wrap:normal;
+    word-break:normal;
+  }
+}
+
+/* The doctors block now uses the same reveal system as the other animated sections. */
+.doctor-feature.reveal-organic{
+  transform:translate3d(0,22px,0);
+}
+.doctor-feature.reveal-organic.is-visible{
+  transform:none;
+}
