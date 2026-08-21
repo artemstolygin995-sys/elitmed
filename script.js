@@ -295,32 +295,30 @@
   documentsGrid?.addEventListener("click", e => { const b = e.target.closest("[data-document]"); if (b) showDocument(Number(b.dataset.document)); });
   $("[data-viewer-close]")?.addEventListener("click", closeViewer); $(".viewer-prev")?.addEventListener("click", () => showDocument(documentIndex-1,-1)); $(".viewer-next")?.addEventListener("click", () => showDocument(documentIndex+1,1));
 
-  const safeJSON = key => { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; } };
-  async function hash(v) { if (crypto?.subtle) { const bytes = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v)); return [...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,"0")).join(""); } return btoa(unescape(encodeURIComponent(v))); }
-  const loginForm = $("#login-form"), registerForm = $("#register-form"), accountShell = $("#drawer-account .account-shell");
-  function switchAuthTab(tab) {
-    const isLogin = tab === "login";
-    $$('[data-auth-tab]').forEach(x => x.classList.toggle("is-active", x.dataset.authTab === tab));
-    $("#account-title").textContent = isLogin ? "Ваш личный кабинет" : "Создать кабинет";
-    const incoming = isLogin ? loginForm : registerForm;
-    const outgoing = isLogin ? registerForm : loginForm;
-    if (!incoming || !outgoing) return;
-    if (incoming.classList.contains("is-active")) return;
-    accountShell?.classList.add("is-switching");
-    outgoing.classList.remove("is-active");
-    incoming.hidden = false;
-    requestAnimationFrame(() => incoming.classList.add("is-active"));
-    setTimeout(() => {
-      outgoing.hidden = true;
-      accountShell?.classList.remove("is-switching");
-    }, reduceMotion ? 0 : 240);
-  }
-  loginForm && (loginForm.hidden = false, loginForm.classList.add("is-active"));
-  registerForm && (registerForm.hidden = true, registerForm.classList.remove("is-active"));
-  $$('[data-auth-tab]').forEach(b => b.addEventListener("click", () => switchAuthTab(b.dataset.authTab)));
-  $("#register-form")?.addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget), user = { name:String(f.get("name")).trim(), email:String(f.get("email")).trim().toLowerCase(), password:await hash(String(f.get("password"))) }; localStorage.setItem("elitmedUser",JSON.stringify(user)); localStorage.setItem("elitmedSession",JSON.stringify({name:user.name,email:user.email})); closeDrawers(false); toast("Личный кабинет создан"); e.currentTarget.reset(); });
-  $("#login-form")?.addEventListener("submit", async e => { e.preventDefault(); const f = new FormData(e.currentTarget), user = safeJSON("elitmedUser"); if (!user || user.email !== String(f.get("email")).trim().toLowerCase() || user.password !== await hash(String(f.get("password")))) return toast("Проверьте email и пароль"); localStorage.setItem("elitmedSession",JSON.stringify({name:user.name,email:user.email})); closeDrawers(false); toast(`Здравствуйте, ${user.name.split(" ")[0]}!`); e.currentTarget.reset(); });
-  $("#callback-form")?.addEventListener("submit", e => { e.preventDefault(); closeDrawers(false); toast("Спасибо! Администратор скоро свяжется с вами"); e.currentTarget.reset(); });
+  $("#callback-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const button = $('button[type="submit"]', form);
+    if (button?.disabled) return;
+    const buttonContent = button?.innerHTML;
+    if (button) { button.disabled = true; button.textContent = "Отправляем…"; }
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/elit.med.77@bk.ru", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form)
+      });
+      if (!response.ok) throw new Error(`Form submission failed: ${response.status}`);
+      closeDrawers(false);
+      toast("Спасибо! Заявка отправлена администратору");
+      form.reset();
+    } catch (error) {
+      console.error(error);
+      toast("Не удалось отправить заявку. Позвоните нам: +7 924 722-24-80");
+    } finally {
+      if (button) { button.disabled = false; button.innerHTML = buttonContent; }
+    }
+  });
   const cookie = $("#cookie"); if (localStorage.getItem("elitmedCookies")) cookie?.classList.add("is-hidden"); $$('[data-cookie]').forEach(b => b.addEventListener("click", () => { localStorage.setItem("elitmedCookies",b.dataset.cookie); cookie?.classList.add("is-hidden"); }));
   addEventListener("keydown", e => { if (e.key !== "Escape") return; if (viewer?.classList.contains("is-open")) closeViewer(); else if (detail?.classList.contains("is-open")) closeDetail(); else closeDrawers(); });
 })();
